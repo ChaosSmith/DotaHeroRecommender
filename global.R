@@ -1,10 +1,13 @@
+# Required Libraries
 library(rvest)
 
 adjust_names <- function(name){
+    # Function takes hero names as a string and modifies them for proper URL formatting
     return(tolower(gsub("'","",(gsub(" ","-",name)))))
 }
 
 build_url <- function(adj_name, hero_page = FALSE){
+    # Function takes an adjusted name and builds a URL depending on the destination specified by the boolean.
     if (hero_page) {
         link = paste("http://www.dotabuff.com/heroes/",adj_name, sep = "")
         return(link)
@@ -16,6 +19,7 @@ build_url <- function(adj_name, hero_page = FALSE){
 }
 
 role_frame <- function(roles){
+    # Function builds a list of boolean values corresponding to a string containing roles.
     dota_roles <- c("Melee","Ranged","Carry","Disabler","Initiator","Jungler","Support","Durable","Nuker","Pusher","Escape")
     role_check <- c(F,F,F,F,F,F,F,F,F,F,F)
     count = 1
@@ -27,6 +31,7 @@ role_frame <- function(roles){
 }
 
 get_roles <- function(adj_name){
+    # Function takes an adjusted hero name and returns a list of that hero's roles.
     role_list <- data.frame(F,F,F,F,F,F,F,F,F,F,F,F)
     for (i in adj_name) {
         url <- build_url(i, hero_page = TRUE)
@@ -39,6 +44,7 @@ get_roles <- function(adj_name){
 }
 
 load_fun <- function(){
+    # Function initialises the hero_frame
     ref_url <- "http://www.dotabuff.com/heroes/abaddon/matchups"
     hero_names <- sort((ref_url %>% read_html() %>% html_nodes(xpath='/html/body/div[1]/div[7]/div[3]/section/article/table') %>% html_table())[[1]][,2])
     adj_names <- adjust_names(hero_names)
@@ -50,7 +56,7 @@ load_fun <- function(){
 `%notin%` <- function(x,y) !(x %in% y) 
 
 recommended_hero <- function(opposition_list){
-    
+    # Function takes a list of opposing heroes and returns the best counter to all 5.
     Ranking <- 0:109
     Score <- list(rep(0, 110))
     Heroes <- hero_frame$hero_names
@@ -70,6 +76,7 @@ recommended_hero <- function(opposition_list){
     return(score_frame[1:5,1])
 }
 
+# Initialise App Data
 hero_frame = load_fun()
 hero_frame$hero_names = as.character(hero_frame$hero_names)
 hero_frame$adj_names = as.character(hero_frame$adj_names)
